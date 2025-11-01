@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,38 @@ import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeTemplate, setActiveTemplate] = useState('all');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const codeSteps = [
+    '<div className="hero">\n',
+    '  <h1>Добро пожаловать</h1>\n',
+    '  <p>Ваш сайт готов!</p>\n',
+    '  <button>Начать</button>\n',
+    '</div>'
+  ];
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setGeneratedCode('');
+    setCurrentStep(0);
+  };
+
+  useEffect(() => {
+    if (isGenerating && currentStep < codeSteps.length) {
+      const timer = setTimeout(() => {
+        setGeneratedCode(prev => prev + codeSteps[currentStep]);
+        setCurrentStep(prev => prev + 1);
+      }, 600);
+      return () => clearTimeout(timer);
+    } else if (currentStep >= codeSteps.length) {
+      setTimeout(() => {
+        setIsGenerating(false);
+        setCurrentStep(0);
+      }, 2000);
+    }
+  }, [isGenerating, currentStep]);
 
   const templates = [
     { id: 1, name: 'E-commerce Store', category: 'shop', image: '🛍️', color: 'from-purple-500 to-pink-500' },
@@ -94,17 +126,49 @@ const Index = () => {
             <Card className="p-8 bg-card/50 backdrop-blur-xl border-2 gradient-border relative">
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className={`w-3 h-3 rounded-full transition-all ${
+                    isGenerating ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                  }`} />
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
-                <span className="text-sm text-muted-foreground ml-4">AI генерирует сайт...</span>
+                <span className="text-sm text-muted-foreground ml-4">
+                  {isGenerating ? 'AI генерирует сайт...' : 'Готово к генерации'}
+                </span>
+                <Button 
+                  size="sm" 
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="ml-auto bg-primary/20 hover:bg-primary/30"
+                >
+                  <Icon name="Play" size={14} className="mr-1" />
+                  {isGenerating ? 'Генерация...' : 'Запустить демо'}
+                </Button>
               </div>
-              <div className="bg-muted/30 rounded-lg p-6 text-left font-mono text-sm">
-                <div className="text-primary mb-2">{'<'}<span className="text-secondary">div</span> className=<span className="text-accent">"hero"</span>{'>'}</div>
-                <div className="text-muted-foreground ml-4">{'<'}<span className="text-secondary">h1</span>{'>'} Добро пожаловать {'</'}<span className="text-secondary">h1</span>{'>'}</div>
-                <div className="text-muted-foreground ml-4">{'<'}<span className="text-secondary">button</span>{'>'} Начать {'</'}<span className="text-secondary">button</span>{'>'}</div>
-                <div className="text-primary">{'</'}<span className="text-secondary">div</span>{'>'}</div>
+              <div className="bg-muted/30 rounded-lg p-6 text-left font-mono text-sm min-h-[180px] relative">
+                {generatedCode.length > 0 ? (
+                  <div className="whitespace-pre-wrap">
+                    {generatedCode.split('\n').map((line, idx) => (
+                      <div key={idx} className="animate-fade-in">
+                        {line.includes('<div') || line.includes('</div>') ? (
+                          <span className="text-primary">{line}</span>
+                        ) : line.includes('<h1') || line.includes('</h1>') || line.includes('<p') || line.includes('</p>') || line.includes('<button') || line.includes('</button>') ? (
+                          <span className="text-muted-foreground">{line}</span>
+                        ) : (
+                          <span className="text-muted-foreground">{line}</span>
+                        )}
+                      </div>
+                    ))}
+                    {isGenerating && <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1">|</span>}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground/50 flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <Icon name="Code" size={48} className="mx-auto mb-2 opacity-30" />
+                      <p>Нажмите "Запустить демо" чтобы увидеть AI в действии</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
