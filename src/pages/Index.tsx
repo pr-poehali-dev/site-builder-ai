@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
@@ -9,16 +11,108 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
+  const [userPrompt, setUserPrompt] = useState('');
+  const [generatedHTML, setGeneratedHTML] = useState('');
 
-  const codeSteps = [
-    '<div className="hero">\n',
-    '  <h1>Добро пожаловать</h1>\n',
-    '  <p>Ваш сайт готов!</p>\n',
-    '  <button>Начать</button>\n',
-    '</div>'
-  ];
+  const generateCodeFromPrompt = (prompt: string) => {
+    const lowerPrompt = prompt.toLowerCase();
+    
+    if (lowerPrompt.includes('магазин') || lowerPrompt.includes('товар') || lowerPrompt.includes('продукт')) {
+      return [
+        '<div className="shop">\n',
+        '  <header className="navbar">\n',
+        '    <h1>Интернет-магазин</h1>\n',
+        '    <nav>Каталог | Корзина | Контакты</nav>\n',
+        '  </header>\n',
+        '  <section className="products">\n',
+        '    <div className="product-card">\n',
+        '      <img src="product.jpg" />\n',
+        '      <h3>Товар #1</h3>\n',
+        '      <p className="price">$99.99</p>\n',
+        '      <button>В корзину</button>\n',
+        '    </div>\n',
+        '  </section>\n',
+        '</div>'
+      ];
+    } else if (lowerPrompt.includes('портфолио') || lowerPrompt.includes('резюме') || lowerPrompt.includes('работы')) {
+      return [
+        '<div className="portfolio">\n',
+        '  <header className="hero">\n',
+        '    <h1>Иван Иванов</h1>\n',
+        '    <p className="subtitle">Web-дизайнер & Разработчик</p>\n',
+        '  </header>\n',
+        '  <section className="projects">\n',
+        '    <h2>Мои работы</h2>\n',
+        '    <div className="project-grid">\n',
+        '      <div className="project-item">\n',
+        '        <img src="project1.jpg" />\n',
+        '        <h3>Проект #1</h3>\n',
+        '      </div>\n',
+        '    </div>\n',
+        '  </section>\n',
+        '</div>'
+      ];
+    } else if (lowerPrompt.includes('блог') || lowerPrompt.includes('статьи') || lowerPrompt.includes('новости')) {
+      return [
+        '<div className="blog">\n',
+        '  <header>\n',
+        '    <h1>Мой блог</h1>\n',
+        '    <p>Интересные статьи каждый день</p>\n',
+        '  </header>\n',
+        '  <main className="articles">\n',
+        '    <article className="post">\n',
+        '      <h2>Заголовок статьи</h2>\n',
+        '      <p className="meta">15 ноября 2024</p>\n',
+        '      <p>Текст статьи...</p>\n',
+        '      <a href="#">Читать далее →</a>\n',
+        '    </article>\n',
+        '  </main>\n',
+        '</div>'
+      ];
+    } else if (lowerPrompt.includes('лендинг') || lowerPrompt.includes('landing') || lowerPrompt.includes('продающ')) {
+      return [
+        '<div className="landing">\n',
+        '  <section className="hero">\n',
+        '    <h1>Революционный продукт</h1>\n',
+        '    <p>Измените свою жизнь уже сегодня</p>\n',
+        '    <button className="cta">Получить доступ</button>\n',
+        '  </section>\n',
+        '  <section className="features">\n',
+        '    <div className="feature">\n',
+        '      <h3>✨ Преимущество #1</h3>\n',
+        '      <p>Описание преимущества</p>\n',
+        '    </div>\n',
+        '  </section>\n',
+        '</div>'
+      ];
+    } else {
+      return [
+        '<div className="website">\n',
+        '  <header className="header">\n',
+        '    <h1>Добро пожаловать!</h1>\n',
+        '    <p>Ваш сайт успешно создан</p>\n',
+        '  </header>\n',
+        '  <main className="content">\n',
+        '    <section>\n',
+        '      <h2>О проекте</h2>\n',
+        '      <p>Описание вашего проекта</p>\n',
+        '    </section>\n',
+        '  </main>\n',
+        '  <footer>\n',
+        '    <p>© 2024 Ваш сайт</p>\n',
+        '  </footer>\n',
+        '</div>'
+      ];
+    }
+  };
+
+  const [codeSteps, setCodeSteps] = useState<string[]>([]);
 
   const handleGenerate = () => {
+    if (!userPrompt.trim()) return;
+    
+    const steps = generateCodeFromPrompt(userPrompt);
+    setCodeSteps(steps);
     setIsGenerating(true);
     setGeneratedCode('');
     setCurrentStep(0);
@@ -29,15 +123,15 @@ const Index = () => {
       const timer = setTimeout(() => {
         setGeneratedCode(prev => prev + codeSteps[currentStep]);
         setCurrentStep(prev => prev + 1);
-      }, 600);
+      }, 400);
       return () => clearTimeout(timer);
-    } else if (currentStep >= codeSteps.length) {
+    } else if (currentStep >= codeSteps.length && codeSteps.length > 0) {
       setTimeout(() => {
         setIsGenerating(false);
-        setCurrentStep(0);
-      }, 2000);
+        setGeneratedHTML(generatedCode);
+      }, 1000);
     }
-  }, [isGenerating, currentStep]);
+  }, [isGenerating, currentStep, codeSteps]);
 
   const templates = [
     { id: 1, name: 'E-commerce Store', category: 'shop', image: '🛍️', color: 'from-purple-500 to-pink-500' },
@@ -121,56 +215,159 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="mt-16 relative animate-float">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 blur-3xl" />
-            <Card className="p-8 bg-card/50 backdrop-blur-xl border-2 gradient-border relative">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex gap-2">
-                  <div className={`w-3 h-3 rounded-full transition-all ${
-                    isGenerating ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-                  }`} />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                </div>
-                <span className="text-sm text-muted-foreground ml-4">
-                  {isGenerating ? 'AI генерирует сайт...' : 'Готово к генерации'}
-                </span>
-                <Button 
-                  size="sm" 
-                  onClick={handleGenerate}
+          <div className="mt-16 max-w-6xl mx-auto">
+            <Card className="p-8 bg-card/50 backdrop-blur-xl border-2 gradient-border relative mb-6">
+              <div className="mb-6">
+                <label className="block text-sm font-semibold mb-3 text-foreground">
+                  <Icon name="Sparkles" size={16} className="inline mr-2" />
+                  Опишите, какой сайт вы хотите создать
+                </label>
+                <Textarea 
+                  placeholder="Например: интернет-магазин одежды с корзиной и каталогом товаров"
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  className="min-h-[100px] bg-background/50 border-border/50 text-lg resize-none"
                   disabled={isGenerating}
-                  className="ml-auto bg-primary/20 hover:bg-primary/30"
-                >
-                  <Icon name="Play" size={14} className="mr-1" />
-                  {isGenerating ? 'Генерация...' : 'Запустить демо'}
-                </Button>
+                />
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <Badge 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-primary/20"
+                    onClick={() => setUserPrompt('интернет-магазин одежды с каталогом')}
+                  >
+                    🛍️ Магазин
+                  </Badge>
+                  <Badge 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-primary/20"
+                    onClick={() => setUserPrompt('портфолио веб-дизайнера с галереей работ')}
+                  >
+                    💼 Портфолио
+                  </Badge>
+                  <Badge 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-primary/20"
+                    onClick={() => setUserPrompt('блог о технологиях со статьями')}
+                  >
+                    📝 Блог
+                  </Badge>
+                  <Badge 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-primary/20"
+                    onClick={() => setUserPrompt('лендинг для стартапа с призывом к действию')}
+                  >
+                    🚀 Лендинг
+                  </Badge>
+                </div>
               </div>
-              <div className="bg-muted/30 rounded-lg p-6 text-left font-mono text-sm min-h-[180px] relative">
-                {generatedCode.length > 0 ? (
-                  <div className="whitespace-pre-wrap">
-                    {generatedCode.split('\n').map((line, idx) => (
-                      <div key={idx} className="animate-fade-in">
-                        {line.includes('<div') || line.includes('</div>') ? (
-                          <span className="text-primary">{line}</span>
-                        ) : line.includes('<h1') || line.includes('</h1>') || line.includes('<p') || line.includes('</p>') || line.includes('<button') || line.includes('</button>') ? (
-                          <span className="text-muted-foreground">{line}</span>
-                        ) : (
-                          <span className="text-muted-foreground">{line}</span>
-                        )}
-                      </div>
-                    ))}
-                    {isGenerating && <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1">|</span>}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground/50 flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <Icon name="Code" size={48} className="mx-auto mb-2 opacity-30" />
-                      <p>Нажмите "Запустить демо" чтобы увидеть AI в действии</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <Button 
+                size="lg"
+                onClick={handleGenerate}
+                disabled={isGenerating || !userPrompt.trim()}
+                className="w-full bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 glow-purple"
+              >
+                <Icon name="Sparkles" className="mr-2" size={20} />
+                {isGenerating ? 'AI генерирует сайт...' : 'Создать сайт с помощью AI'}
+              </Button>
             </Card>
+
+            {(generatedCode || isGenerating) && (
+              <div className="grid md:grid-cols-2 gap-6 animate-scale-in">
+                <Card className="p-6 bg-card/50 backdrop-blur-xl border-2 gradient-border relative">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex gap-2">
+                      <div className={`w-3 h-3 rounded-full transition-all ${
+                        isGenerating ? 'bg-green-500 animate-pulse' : 'bg-green-500'
+                      }`} />
+                      <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                      <div className="w-3 h-3 rounded-full bg-green-500" />
+                    </div>
+                    <span className="text-sm font-semibold ml-2">
+                      <Icon name="Code" size={14} className="inline mr-1" />
+                      Сгенерированный код
+                    </span>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-4 text-left font-mono text-xs max-h-[400px] overflow-auto">
+                    {generatedCode.length > 0 ? (
+                      <div className="whitespace-pre-wrap">
+                        {generatedCode.split('\n').map((line, idx) => (
+                          <div key={idx} className="animate-fade-in leading-relaxed">
+                            {line.includes('<') && line.includes('>') ? (
+                              <span className="text-primary">{line}</span>
+                            ) : (
+                              <span className="text-muted-foreground">{line}</span>
+                            )}
+                          </div>
+                        ))}
+                        {isGenerating && <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1">|</span>}
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground/50 text-center py-8">
+                        <Icon name="Loader2" size={32} className="mx-auto mb-2 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                <Card className="p-6 bg-card/50 backdrop-blur-xl border-2 gradient-border relative">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="Eye" size={14} className="text-accent" />
+                    <span className="text-sm font-semibold">Предпросмотр сайта</span>
+                  </div>
+                  <div className="bg-white rounded-lg p-6 min-h-[350px] max-h-[400px] overflow-auto">
+                    {generatedHTML ? (
+                      <div className="animate-fade-in text-gray-900">
+                        <div className="space-y-4">
+                          <div className="border-b border-gray-200 pb-4">
+                            <h1 className="text-2xl font-bold text-gray-900 mb-2">✨ Ваш сайт готов!</h1>
+                            <p className="text-gray-600">AI успешно сгенерировал структуру</p>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-700">HTML структура создана</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-700">Семантическая разметка применена</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-gray-700">Готово к стилизации</span>
+                            </div>
+                          </div>
+                          <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                            <p className="text-sm text-gray-700 font-semibold mb-2">🎨 Следующие шаги:</p>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                              <li>• Добавить CSS стили</li>
+                              <li>• Настроить адаптивность</li>
+                              <li>• Подключить JavaScript</li>
+                              <li>• Экспортировать код</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 flex items-center justify-center h-full">
+                        <div className="text-center">
+                          {isGenerating ? (
+                            <>
+                              <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin text-purple-500" />
+                              <p className="text-sm">Создаём превью...</p>
+                            </>
+                          ) : (
+                            <>
+                              <Icon name="Eye" size={48} className="mx-auto mb-3 opacity-30" />
+                              <p className="text-sm">Предпросмотр появится здесь</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
         </section>
 
